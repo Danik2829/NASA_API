@@ -1,5 +1,4 @@
 CREATE TABLE metadata(
-    id UUID PRIMARY KEY,
     date DATE NOT NULL UNIQUE,
     explanation TEXT NOT NULL,
     hdurl TEXT NOT NULL,

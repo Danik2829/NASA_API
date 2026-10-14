@@ -2,6 +2,8 @@ package store
 
 import (
 	"context"
+	"fmt"
+	"io"
 
 	"github.com/NASA_API/internal/config"
 	"github.com/minio/minio-go/v7"
@@ -13,7 +15,7 @@ type ImageStore struct {
 	bucketName  string
 }
 
-func NewMinioStore(cfg config.MinioConfig) (*minio.Client, error) {
+func NewMinioStore(cfg config.MinioConfig) (*ImageStore, error) {
 	minioClient, err := minio.New(cfg.Endpoint, &minio.Options{
 		Creds:  credentials.NewStaticV4(cfg.AccessKey, cfg.SecretKey, ""),
 		Secure: false,
@@ -32,7 +34,7 @@ func NewMinioStore(cfg config.MinioConfig) (*minio.Client, error) {
 		}
 	}
 
-	return minioClient, nil
+	return &ImageStore{minioClient: minioClient, bucketName: cfg.Bucket}, nil
 }
 
 func (i *ImageStore) GetImage(ctx context.Context, objectName, filePath, contentType string) (minio.UploadInfo, error) {
@@ -46,13 +48,27 @@ func (i *ImageStore) GetImage(ctx context.Context, objectName, filePath, content
 	return info, err
 }
 
-func (i *ImageStore) PutImage(ctx context.Context, objectName, filePath string) (minio.UploadInfo, error) {
-	info, err := i.minioClient.FPutObject(
+func (m *ImageStore) PutImage(
+	ctx context.Context,
+	objectName string,
+	reader io.Reader,
+	size int64,
+	contentType string,
+) error {
+	_, err := m.minioClient.PutObject(
 		ctx,
-		i.bucketName,
+		m.bucketName,
 		objectName,
-		filePath,
-		minio.PutObjectOptions{},
+		reader,
+		size,
+		minio.PutObjectOptions{
+			ContentType: contentType,
+		},
 	)
-	return info, err
+
+	if err != nil {
+		return fmt.Errorf("upload image to MinIO: %w", err)
+	}
+
+	return nil
 }

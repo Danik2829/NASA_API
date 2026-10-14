@@ -6,7 +6,7 @@ import (
 	"fmt"
 
 	"github.com/NASA_API/internal/config"
-	"github.com/NASA_API/internal/entity"
+	"github.com/NASA_API/internal/core"
 	_ "github.com/lib/pq"
 )
 
@@ -37,7 +37,7 @@ func NewMetaDataStore(cfg config.PsqlConfig) (*MetaDataStore, error) {
 	return &MetaDataStore{db: db}, nil
 }
 
-func (m *MetaDataStore) SaveApod(apod *entity.Apod) error {
+func (m *MetaDataStore) SaveApod(apod *core.Apod) error {
 	_, err := m.db.Exec(`INSERT INTO metadata (date,explanation,hdurl,media_type,title,url)
 						VALUES ($1, $2, $3, $4, $5, $6)`,
 		apod.Date,
@@ -49,26 +49,26 @@ func (m *MetaDataStore) SaveApod(apod *entity.Apod) error {
 	return err
 }
 
-func (m *MetaDataStore) GetApodByDate(date string) (entity.Apod, error) {
-	apod := entity.Apod{}
+func (m *MetaDataStore) GetApodByDate(date string) (*core.Apod, error) {
+	apod := core.Apod{}
 	err := m.db.QueryRow(`SELECT date,explanation,hdurl,media_type,title,url 
 							FROM metadata
 							WHERE date = $1`, date).Scan(
-		apod.Date,
-		apod.Explanation,
-		apod.HdURL,
-		apod.MediaType,
-		apod.Title,
-		apod.Url,
+		&apod.Date,
+		&apod.Explanation,
+		&apod.HdURL,
+		&apod.MediaType,
+		&apod.Title,
+		&apod.Url,
 	)
 	if errors.Is(err, sql.ErrNoRows) {
-		return apod, fmt.Errorf("no such apod")
+		return nil, nil
 	}
 
-	return apod, err
+	return &apod, nil
 }
 
-func (m *MetaDataStore) GetAllApods() ([]entity.Apod, error) {
+func (m *MetaDataStore) GetAllApods() ([]core.Apod, error) {
 	rows, err := m.db.Query(`SELECT date,explanation,hdurl,media_type,title,url 
 							FROM metadata`)
 	if err != nil {
@@ -76,10 +76,10 @@ func (m *MetaDataStore) GetAllApods() ([]entity.Apod, error) {
 	}
 	defer rows.Close()
 
-	apods := []entity.Apod{}
+	apods := []core.Apod{}
 
 	for rows.Next() {
-		apod := entity.Apod{}
+		apod := core.Apod{}
 		err := rows.Scan(
 			&apod.Date,
 			&apod.Explanation,
