@@ -3,8 +3,6 @@ package core
 import (
 	"context"
 	"io"
-
-	"github.com/minio/minio-go/v7"
 )
 
 type MetaDataActions interface {
@@ -14,7 +12,7 @@ type MetaDataActions interface {
 }
 
 type ImageActions interface {
-	GetImage(ctx context.Context, objectName, filePath, contentType string) (minio.UploadInfo, error)
+	GetImage(ctx context.Context, objectName string) ([]byte, error)
 	PutImage(
 		ctx context.Context,
 		objectName string,
@@ -26,6 +24,12 @@ type ImageActions interface {
 
 type NasaAPI interface {
 	GetApodByDate(date string) (*Apod, error)
+}
+
+type ServiceActions interface {
+	GetByDate(date string, ctx context.Context) (*Apod, error)
+	GetByDateImage(date string, ctx context.Context) ([]byte, error)
+	GetAllApods() ([]Apod, error)
 }
 
 type Apod struct {

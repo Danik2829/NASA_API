@@ -1,12 +1,12 @@
 package main
 
 import (
-	// "github.com/gofiber/fiber/v3"
-	"context"
-	"fmt"
 	"log"
 
+	"github.com/gofiber/fiber/v3"
+
 	"github.com/NASA_API/internal/config"
+	"github.com/NASA_API/internal/handler"
 	"github.com/NASA_API/internal/nasa"
 	"github.com/NASA_API/internal/service"
 	"github.com/NASA_API/internal/store"
@@ -30,6 +30,12 @@ func main() {
 
 	nasaClient := nasa.NewNasaApi()
 	service := service.NewService(metadataStore, imageStore, nasaClient)
-	_ = service
-	fmt.Println(service.GetByDate("261014", context.Background()))
+	handler := handler.NewHandler(service)
+
+	server := fiber.New()
+	handler.Mount(server)
+
+	if err := server.Listen(":3000"); err != nil {
+		log.Fatal(err)
+	}
 }

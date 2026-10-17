@@ -3,9 +3,11 @@ package nasa
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/NASA_API/internal/core"
 	"io"
 	"net/http"
+	"time"
+
+	"github.com/NASA_API/internal/core"
 )
 
 const NasaUrl = "https://science.nasa.gov/wp-json/wp/v2/apod-basic/%s"
@@ -18,7 +20,9 @@ func NewNasaApi() *NasaApi {
 }
 
 func (n *NasaApi) GetApodByDate(date string) (*core.Apod, error) {
-	url := fmt.Sprintf(NasaUrl, date)
+	s, _ := time.Parse("2006-01-02", date)
+	out := s.Format("060102")
+	url := fmt.Sprintf(NasaUrl, out)
 	resp, err := http.Get(url)
 	if err != nil {
 		return nil, fmt.Errorf("Error while request api.nasa.gov: %w", err)

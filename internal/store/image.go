@@ -37,15 +37,14 @@ func NewMinioStore(cfg config.MinioConfig) (*ImageStore, error) {
 	return &ImageStore{minioClient: minioClient, bucketName: cfg.Bucket}, nil
 }
 
-func (i *ImageStore) GetImage(ctx context.Context, objectName, filePath, contentType string) (minio.UploadInfo, error) {
-	info, err := i.minioClient.FPutObject(
-		ctx,
-		i.bucketName,
-		objectName,
-		filePath,
-		minio.PutObjectOptions{ContentType: contentType},
-	)
-	return info, err
+func (i *ImageStore) GetImage(ctx context.Context, objectName string) ([]byte, error) {
+	obj, err := i.minioClient.GetObject(ctx, i.bucketName, objectName, minio.GetObjectOptions{})
+	if err != nil {
+		return nil, err
+	}
+	defer obj.Close()
+
+	return io.ReadAll(obj)
 }
 
 func (m *ImageStore) PutImage(
