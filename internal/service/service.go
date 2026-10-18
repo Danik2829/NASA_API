@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	//"strings"
 
 	"github.com/NASA_API/internal/core"
 )
