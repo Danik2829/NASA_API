@@ -35,7 +35,7 @@ func main() {
 	server := fiber.New()
 	handler.Mount(server)
 
-	if err := server.Listen(":3000"); err != nil {
+	if err := server.Listen(":8080"); err != nil {
 		log.Fatal(err)
 	}
 }
