@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nasa-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nasa-api
+  template:
+    metadata:
+      labels:
+        app: nasa-api
+    spec:
+      initContainers:
+        - name: migration
+          image: apod-migration:latest
+          imagePullPolicy: IfNotPresent
+          args:
+            - "-path=/migrations"
+            - "-database=postgres://nasa:212829908@postgres:5432/nasa_apod?sslmode=disable"
+            - "up"
+
+      containers:
+        - name: nasa-api
+          image: nasa-api
+          env:
+          - name: POSTGRES_USER
+            value: nasa
+          - name: POSTGRES_PASSWORD
+            value: "212829908"
+          - name: POSTGRES_DB
+            value: nasa_apod
+          - name: POSTGRES_PORT
+            value: "5432"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080

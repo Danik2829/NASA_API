@@ -1,0 +1,2 @@
+ALTER TABLE metadata
+ALTER COLUMN date TYPE DATE USING to_date(date, 'YYYY-MM-DD');
